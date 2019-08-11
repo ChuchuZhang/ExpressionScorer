@@ -5,16 +5,23 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.ArrayDeque;
 import java.lang.Math;
+
+/**
+ * This class provides the util functions to evaluate expression values and
+ * build the binary expression tree.
+ *
+ */
 public class ExpressionScorer {
 	public static class ExpressionVal {
 		double value;
 		Node expressionTree;
+
 		ExpressionVal(double value, Node expressionTree) {
 			this.value = value;
 			this.expressionTree = expressionTree;
 		}
 	}
-	
+
 	public static class Node {
 		String val;
 		Node left;
@@ -23,32 +30,54 @@ public class ExpressionScorer {
 		Node(String val) {
 			this.val = val;
 		}
+
 		Node(String val, Node left, Node right) {
 			this.val = val;
 			this.left = left;
 			this.right = right;
 		}
-	    
-	    public String toString() {
-	        StringBuilder buffer = new StringBuilder(50);
-	        print(buffer, "", "");
-	        return buffer.toString();
-	    }
 
-	    private void print(StringBuilder buffer, String prefix, String childrenPrefix) {
-	        buffer.append(prefix);
-	        buffer.append(val);
-	        buffer.append('\n');
-	        if (right != null) {
-	            right.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
-	        }
-	        if (left != null) {
-	             left.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
-	        }
-	    }
+		public String toString() {
+			StringBuilder buffer = new StringBuilder(50);
+			print(buffer, "", "");
+			return buffer.toString();
+		}
+
+		private void print(StringBuilder buffer, String prefix, String childrenPrefix) {
+			buffer.append(prefix);
+			buffer.append(val);
+			buffer.append('\n');
+			if (left != null) {
+				left.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
+			}
+			if (right != null) {
+				right.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
+			}
+		}
 	}
 
-	public static List<ExpressionCommon.Token> toRPN(List<ExpressionCommon.Token> tokens) {
+	/**
+	 * Evaluate the values and build binary expression tree given the expression
+	 * tokens.
+	 * 
+	 * @param tokens
+	 *            Token parsed by the InputHandler
+	 * @return Value and binary expression tree of the tokens wrapped in the
+	 *         expressionVal data struct.
+	 */
+	public static ExpressionVal evalTokens(List<ExpressionCommon.Token> tokens) {
+		List<ExpressionCommon.Token> rpnTokens = toRPN(tokens);
+		return evalRpn(rpnTokens);
+	}
+
+	/**
+	 * Helper function to convert the expressions to the reverse polish notations.
+	 * 
+	 * @param tokens
+	 *            Token parsed by the InputHandler.
+	 * @return Tokens in the reverse polish notations.
+	 */
+	private static List<ExpressionCommon.Token> toRPN(List<ExpressionCommon.Token> tokens) {
 		List<ExpressionCommon.Token> rtn = new ArrayList<ExpressionCommon.Token>();
 		Deque<ExpressionCommon.Token> operatorStack = new ArrayDeque<ExpressionCommon.Token>();
 		for (int i = 0; i < tokens.size(); i++) {
@@ -81,7 +110,6 @@ public class ExpressionScorer {
 						rtn.add(operatorStack.pollFirst());
 					}
 				} else if (token.operator.equals("]")) {
-					// System.out.println(operatorStack);
 					while (!operatorStack.isEmpty()) {
 						ExpressionCommon.Token lastOperator = operatorStack.pollFirst();
 						if (lastOperator.operator.equals("[")) {
@@ -118,8 +146,15 @@ public class ExpressionScorer {
 		}
 		return rtn;
 	}
-	
-	public static ExpressionVal evalRpn(List<ExpressionCommon.Token> rpnTokens) {
+
+	/**
+	 * Helper function to evaluate the values of the reverse polish notations.
+	 * 
+	 * @param tokens
+	 *            Tokens in the reverse polish notations.
+	 * @return value and binary expression tree of the tokens.
+	 */
+	private static ExpressionVal evalRpn(List<ExpressionCommon.Token> rpnTokens) {
 		Deque<Node> nodeStack = new ArrayDeque<Node>();
 		Deque<Double> valStack = new ArrayDeque<Double>();
 		for (int i = 0; i < rpnTokens.size(); i++) {
@@ -133,7 +168,7 @@ public class ExpressionScorer {
 				// Curr Token is an operator
 				Node newNode;
 				Double newVal;
-				if(currToken.isUnary) {
+				if (currToken.isUnary) {
 					Double prevVal = valStack.pollFirst();
 					Node prevNode = nodeStack.pollFirst();
 					if (currToken.operator.equals("+")) {
@@ -153,36 +188,35 @@ public class ExpressionScorer {
 					Node prevNode2 = nodeStack.pollFirst();
 					Double prevVal1 = valStack.pollFirst();
 					Node prevNode1 = nodeStack.pollFirst();
-					switch(currToken.operator) {
-						case "+":
-							newVal = prevVal1 + prevVal2;
-							newNode = new Node("+", prevNode1, prevNode2);
-							break;
-						case "-":
-							newVal = prevVal1 - prevVal2;
-							newNode = new Node("-", prevNode1, prevNode2);
-							break;
-						case "*":
-							newVal = prevVal1 * prevVal2;
-							newNode = new Node("*", prevNode1, prevNode2);
-							break;
-						case "/":
-							newVal = prevVal1 / prevVal2;
-							newNode = new Node("/", prevNode1, prevNode2);
-							break;
-						case "^":
-							newVal = Math.pow(prevVal1, prevVal2);
-							newNode = new Node("^", prevNode1, prevNode2);
-							break;
-						case "log":
-							newVal = Math.log(prevVal2) / Math.log(prevVal1);
-							newNode = new Node("log", prevNode1, prevNode2);
-							break;
-						default:
-							throw new IllegalArgumentException("Unrecognizable operator");
-					}	
+					switch (currToken.operator) {
+					case "+":
+						newVal = prevVal1 + prevVal2;
+						newNode = new Node("+", prevNode1, prevNode2);
+						break;
+					case "-":
+						newVal = prevVal1 - prevVal2;
+						newNode = new Node("-", prevNode1, prevNode2);
+						break;
+					case "*":
+						newVal = prevVal1 * prevVal2;
+						newNode = new Node("*", prevNode1, prevNode2);
+						break;
+					case "/":
+						newVal = prevVal1 / prevVal2;
+						newNode = new Node("/", prevNode1, prevNode2);
+						break;
+					case "^":
+						newVal = Math.pow(prevVal1, prevVal2);
+						newNode = new Node("^", prevNode1, prevNode2);
+						break;
+					case "log":
+						newVal = Math.log(prevVal2) / Math.log(prevVal1);
+						newNode = new Node("log", prevNode1, prevNode2);
+						break;
+					default:
+						throw new IllegalArgumentException("Unrecognizable operator");
+					}
 				}
-				System.out.println(newVal);
 				valStack.offerFirst(newVal);
 				nodeStack.offerFirst(newNode);
 			}
@@ -192,12 +226,12 @@ public class ExpressionScorer {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String s = "log(3.5,2) + 1.2^(4-1/2) + 100* 3";//"log(10.5,2) + log(10.5,2) + log(10.5,2) + log(10.5,2)"; //2*0.1 -+ 10^2^4 * log(1+2*3+4+log(1/2*3,21), 10.3)";//"-10*2+(-log(2,2)^2)";
+		String s = "log(3.5,2) + 1.2^(4-1/2) + (100)*(2)* 3";// "log(10.5,2) + log(10.5,2) + log(10.5,2) + log(10.5,2)";
+																// //2*0.1 -+ 10^2^4 * log(1+2*3+4+log(1/2*3,21),
+																// 10.3)";//"-10*2+(-log(2,2)^2)";
 		List<ExpressionCommon.Token> tokens = InputHandler.tokenize(s);
-		System.out.println(tokens);
-		List<ExpressionCommon.Token> RPN = toRPN(tokens);
-		System.out.println(RPN);
-		ExpressionVal rst = evalRpn(RPN);
+		//System.out.println(tokens);
+		ExpressionVal rst = evalTokens(tokens);
 		System.out.println(rst.value);
 		System.out.println(rst.expressionTree);
 
