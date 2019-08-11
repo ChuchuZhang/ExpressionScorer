@@ -15,10 +15,15 @@ public class ExpressionScorer {
 	public static class ExpressionVal {
 		double value;
 		Node expressionTree;
+		Exception exp;
 
 		ExpressionVal(double value, Node expressionTree) {
 			this.value = value;
 			this.expressionTree = expressionTree;
+		}
+		
+		ExpressionVal(Exception exp) {
+			this.exp = exp;
 		}
 	}
 
@@ -47,11 +52,11 @@ public class ExpressionScorer {
 			buffer.append(prefix);
 			buffer.append(val);
 			buffer.append('\n');
-			if (left != null) {
-				left.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
-			}
 			if (right != null) {
-				right.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
+				right.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
+			}
+			if (left != null) {
+				left.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
 			}
 		}
 	}
@@ -222,19 +227,6 @@ public class ExpressionScorer {
 			}
 		}
 		return new ExpressionVal(valStack.pollFirst(), nodeStack.pollFirst());
-	}
-
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		String s = "log(3.5,2) + 1.2^(4-1/2) + (100)*(2)* 3";// "log(10.5,2) + log(10.5,2) + log(10.5,2) + log(10.5,2)";
-																// //2*0.1 -+ 10^2^4 * log(1+2*3+4+log(1/2*3,21),
-																// 10.3)";//"-10*2+(-log(2,2)^2)";
-		List<ExpressionCommon.Token> tokens = InputHandler.tokenize(s);
-		//System.out.println(tokens);
-		ExpressionVal rst = evalTokens(tokens);
-		System.out.println(rst.value);
-		System.out.println(rst.expressionTree);
-
 	}
 
 }
