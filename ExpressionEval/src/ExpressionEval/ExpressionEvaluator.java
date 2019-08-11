@@ -27,7 +27,7 @@ public class ExpressionEvaluator {
 		return outputFilenames;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, IOException {
 		for (String filename : args) {
 			try {
 				System.out.print("results for file " + filename + ": ");

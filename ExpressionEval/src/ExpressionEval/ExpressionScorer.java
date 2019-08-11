@@ -1,8 +1,10 @@
 package ExpressionEval;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.ArrayDeque;
 import java.lang.Math;
 
@@ -12,6 +14,9 @@ import java.lang.Math;
  *
  */
 public class ExpressionScorer {
+	// This map caches the calculated value for *, /, ^ and log operations.
+	private static Map<String, Double> calculatedExpressionToValueCache = new HashMap<String, Double>();
+
 	public static class ExpressionVal {
 		double value;
 		Node expressionTree;
@@ -21,7 +26,7 @@ public class ExpressionScorer {
 			this.value = value;
 			this.expressionTree = expressionTree;
 		}
-		
+
 		ExpressionVal(Exception exp) {
 			this.exp = exp;
 		}
@@ -52,8 +57,11 @@ public class ExpressionScorer {
 			buffer.append(prefix);
 			buffer.append(val);
 			buffer.append('\n');
-			if (right != null) {
+			if (right != null && left != null) {
 				right.print(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ");
+			}
+			if (right != null && left == null) {
+				right.print(buffer, childrenPrefix + "├── ", childrenPrefix + "    ");
 			}
 			if (left != null) {
 				left.print(buffer, childrenPrefix + "└── ", childrenPrefix + "    ");
@@ -93,7 +101,8 @@ public class ExpressionScorer {
 			if (token.number != null) {
 				rtn.add(token);
 			} else {
-				if (token.operator.equals("(") || token.operator.equals("log") || token.operator.equals("[")) {
+				if (token.operator.equals("(") || token.operator.equals("log") || token.operator.equals("[")
+						|| token.isUnary) {
 					operatorStack.offerFirst(token);
 				} else if (token.operator.equals(")")) {
 					boolean findLeft = false;
@@ -203,19 +212,62 @@ public class ExpressionScorer {
 						newNode = new Node("-", prevNode1, prevNode2);
 						break;
 					case "*":
-						newVal = prevVal1 * prevVal2;
+						// Check if the operation has been calculated. If not, calculate and push it
+						// into the cache.
+						String operationInString = String.format("%f * %f", prevVal1, prevVal2);
+						String operationInStringReverse = String.format("%f * %f", prevVal2, prevVal1);
+						Double val = calculatedExpressionToValueCache.get(operationInString);
+						if (val == null) {
+							val = calculatedExpressionToValueCache.get(operationInStringReverse);
+							if (val == null) {
+								newVal = prevVal1 * prevVal2;
+								calculatedExpressionToValueCache.put(operationInString, newVal);
+								calculatedExpressionToValueCache.put(operationInStringReverse, newVal);
+							} else {
+								newVal = val;
+							}
+						} else {
+							newVal = val;
+						}
 						newNode = new Node("*", prevNode1, prevNode2);
 						break;
 					case "/":
-						newVal = prevVal1 / prevVal2;
+						// Check if the operation has been calculated. If not, calculate and push it
+						// into the cache.
+						String operationInStr = String.format("%f / %f", prevVal1, prevVal2);
+						Double oldVal = calculatedExpressionToValueCache.get(operationInStr);
+						if (oldVal == null) {
+							newVal = prevVal1 / prevVal2;
+							calculatedExpressionToValueCache.put(operationInStr, newVal);
+						} else {
+							newVal = oldVal;
+						}
 						newNode = new Node("/", prevNode1, prevNode2);
 						break;
 					case "^":
-						newVal = Math.pow(prevVal1, prevVal2);
+						// Check if the operation has been calculated. If not, calculate and push it
+						// into the cache.
+						String opInStr = String.format("%f ^ %f", prevVal1, prevVal2);
+						Double oldValPower = calculatedExpressionToValueCache.get(opInStr);
+						if (oldValPower == null) {
+							newVal = Math.pow(prevVal1, prevVal2);
+							calculatedExpressionToValueCache.put(opInStr, newVal);
+						} else {
+							newVal = oldValPower;
+						}
 						newNode = new Node("^", prevNode1, prevNode2);
 						break;
 					case "log":
-						newVal = Math.log(prevVal2) / Math.log(prevVal1);
+						// Check if the operation has been calculated. If not, calculate and push it
+						// into the cache.
+						String opInStrLog = String.format("log(%f,%f)", prevVal1, prevVal2);
+						Double oldValLog = calculatedExpressionToValueCache.get(opInStrLog);
+						if (oldValLog == null) {
+							newVal = Math.log(prevVal2) / Math.log(prevVal1);
+							calculatedExpressionToValueCache.put(opInStrLog, newVal);
+						} else {
+							newVal = oldValLog;
+						}
 						newNode = new Node("log", prevNode1, prevNode2);
 						break;
 					default:
@@ -228,5 +280,4 @@ public class ExpressionScorer {
 		}
 		return new ExpressionVal(valStack.pollFirst(), nodeStack.pollFirst());
 	}
-
 }
