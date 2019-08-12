@@ -78,9 +78,9 @@ public class ExpressionScorer {
 	 * @return Value and binary expression tree of the tokens wrapped in the
 	 *         expressionVal data struct.
 	 */
-	public static ExpressionVal evalTokens(List<ExpressionCommon.Token> tokens) {
+	public static ExpressionVal evalTokens(List<ExpressionCommon.Token> tokens, boolean useCachedVal) {
 		List<ExpressionCommon.Token> rpnTokens = toRPN(tokens);
-		return evalRpn(rpnTokens);
+		return evalRpn(rpnTokens, useCachedVal);
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class ExpressionScorer {
 	 *            Tokens in the reverse polish notations.
 	 * @return value and binary expression tree of the tokens.
 	 */
-	private static ExpressionVal evalRpn(List<ExpressionCommon.Token> rpnTokens) {
+	private static ExpressionVal evalRpn(List<ExpressionCommon.Token> rpnTokens, boolean useCachedValue) {
 		Deque<Node> nodeStack = new ArrayDeque<Node>();
 		Deque<Double> valStack = new ArrayDeque<Double>();
 		for (int i = 0; i < rpnTokens.size(); i++) {
@@ -217,9 +217,9 @@ public class ExpressionScorer {
 						String operationInString = String.format("%f * %f", prevVal1, prevVal2);
 						String operationInStringReverse = String.format("%f * %f", prevVal2, prevVal1);
 						Double val = calculatedExpressionToValueCache.get(operationInString);
-						if (val == null) {
+						if (val == null || useCachedValue) {
 							val = calculatedExpressionToValueCache.get(operationInStringReverse);
-							if (val == null) {
+							if (val == null || useCachedValue) {
 								newVal = prevVal1 * prevVal2;
 								calculatedExpressionToValueCache.put(operationInString, newVal);
 								calculatedExpressionToValueCache.put(operationInStringReverse, newVal);
@@ -249,7 +249,7 @@ public class ExpressionScorer {
 						// into the cache.
 						String opInStr = String.format("%f ^ %f", prevVal1, prevVal2);
 						Double oldValPower = calculatedExpressionToValueCache.get(opInStr);
-						if (oldValPower == null) {
+						if (oldValPower == null || useCachedValue) {
 							newVal = Math.pow(prevVal1, prevVal2);
 							calculatedExpressionToValueCache.put(opInStr, newVal);
 						} else {
@@ -262,7 +262,7 @@ public class ExpressionScorer {
 						// into the cache.
 						String opInStrLog = String.format("log(%f,%f)", prevVal1, prevVal2);
 						Double oldValLog = calculatedExpressionToValueCache.get(opInStrLog);
-						if (oldValLog == null) {
+						if (oldValLog == null || useCachedValue) {
 							newVal = Math.log(prevVal2) / Math.log(prevVal1);
 							calculatedExpressionToValueCache.put(opInStrLog, newVal);
 						} else {

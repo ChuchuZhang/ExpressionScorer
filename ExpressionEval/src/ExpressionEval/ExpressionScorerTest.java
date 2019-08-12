@@ -64,13 +64,18 @@ class ExpressionScorerTest {
 		assertThrows(IllegalArgumentException.class, () -> {
 			InputHandler.tokenize(formula9);
 		});
+		
+		String formula10 = "2(10)";
+		assertThrows(IllegalArgumentException.class, () -> {
+			InputHandler.tokenize(formula10);
+		});
 	}
 
 	@Test
 	void testBinaryOperator() {
 		String formula = "2*2^2^3";
 		List<ExpressionCommon.Token> tokens = InputHandler.tokenize(formula);
-		ExpressionScorer.ExpressionVal result = ExpressionScorer.evalTokens(tokens);
+		ExpressionScorer.ExpressionVal result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == 512);
 		assertTrue(result.expressionTree.val.equals("*"));
 		assertTrue(result.expressionTree.left.val.equals("2.0"));
@@ -82,7 +87,7 @@ class ExpressionScorerTest {
 
 		formula = "2*(2^2)^3";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == 128);
 		assertTrue(result.expressionTree.val.equals("*"));
 		assertTrue(result.expressionTree.left.val.equals("2.0"));
@@ -94,7 +99,7 @@ class ExpressionScorerTest {
 
 		formula = "2*(log(2, (2+2)))^2 + 4^4.5/2";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == 264);
 	}
 
@@ -102,7 +107,7 @@ class ExpressionScorerTest {
 	void testUnaryOperators() {
 		String formula = "-10";
 		List<ExpressionCommon.Token> tokens = InputHandler.tokenize(formula);
-		ExpressionScorer.ExpressionVal result = ExpressionScorer.evalTokens(tokens);
+		ExpressionScorer.ExpressionVal result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == -10);
 		assertTrue(result.expressionTree.val.equals("-"));
 		assertTrue(result.expressionTree.left == null);
@@ -110,7 +115,7 @@ class ExpressionScorerTest {
 
 		formula = "1*-10";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == -10);
 		assertTrue(result.expressionTree.val.equals("*"));
 		assertTrue(result.expressionTree.left.val.equals("1.0"));
@@ -120,7 +125,7 @@ class ExpressionScorerTest {
 
 		formula = "1+-10^2";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == -99);
 		assertTrue(result.expressionTree.val.equals("+"));
 		assertTrue(result.expressionTree.left.val.equals("1.0"));
@@ -132,7 +137,7 @@ class ExpressionScorerTest {
 
 		formula = "10^-2";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == 0.01);
 		assertTrue(result.expressionTree.val.equals("^"));
 		assertTrue(result.expressionTree.left.val.equals("10.0"));
@@ -142,7 +147,7 @@ class ExpressionScorerTest {
 
 		formula = "-log(2, 4)";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == -2);
 		assertTrue(result.expressionTree.val.equals("-"));
 		assertTrue(result.expressionTree.left == null);
@@ -152,7 +157,7 @@ class ExpressionScorerTest {
 
 		formula = "-(-10)";
 		tokens = InputHandler.tokenize(formula);
-		result = ExpressionScorer.evalTokens(tokens);
+		result = ExpressionScorer.evalTokens(tokens, true);
 		assertTrue(result.value == 10);
 		assertTrue(result.expressionTree.val.equals("-"));
 		assertTrue(result.expressionTree.left == null);
