@@ -75,6 +75,8 @@ public class ExpressionScorer {
 	 * 
 	 * @param tokens
 	 *            Token parsed by the InputHandler
+	 * @param useCachedVal
+	 *            Whether to apply the cache optimization for the evaluation.
 	 * @return Value and binary expression tree of the tokens wrapped in the
 	 *         expressionVal data struct.
 	 */
@@ -101,6 +103,7 @@ public class ExpressionScorer {
 			if (token.number != null) {
 				rtn.add(token);
 			} else {
+				// Token is an operator
 				if (token.operator.equals("(") || token.operator.equals("log") || token.operator.equals("[")
 						|| token.isUnary) {
 					operatorStack.offerFirst(token);
@@ -119,7 +122,8 @@ public class ExpressionScorer {
 						throw new IllegalArgumentException("Invalid parenthesis");
 					}
 				} else if (token.operator.equals(",")) {
-					// Make sure all the operator before the last ] is pushed to the output
+					// Make sure all the operator belonging to the left operand of the log statement
+					// are pushed to the output.
 					while (!operatorStack.isEmpty() && !operatorStack.peekFirst().operator.equals("[")) {
 						rtn.add(operatorStack.pollFirst());
 					}
@@ -141,6 +145,7 @@ public class ExpressionScorer {
 					}
 					rtn.add(logOperator);
 				} else {
+					// Token is a binary operator.
 					while (!operatorStack.isEmpty() && operatorStack.peekFirst().isOperator()) {
 						ExpressionCommon.Token lastOperator = operatorStack.peekFirst();
 						boolean prevShouldExecuteFirst = lastOperator.hasHigherPrecedence(token);
@@ -166,6 +171,8 @@ public class ExpressionScorer {
 	 * 
 	 * @param tokens
 	 *            Tokens in the reverse polish notations.
+	 * @param useCachedVal
+	 *            Whether to apply the cache optimization for the evaluation.
 	 * @return value and binary expression tree of the tokens.
 	 */
 	private static ExpressionVal evalRpn(List<ExpressionCommon.Token> rpnTokens, boolean useCachedValue) {
@@ -174,6 +181,7 @@ public class ExpressionScorer {
 		for (int i = 0; i < rpnTokens.size(); i++) {
 			ExpressionCommon.Token currToken = rpnTokens.get(i);
 			if (currToken.number != null) {
+				// Curr Token is a number
 				valStack.offerFirst(currToken.number);
 				nodeStack.offerFirst(new Node(String.valueOf(currToken.number)));
 			} else if (currToken.operator == null) {

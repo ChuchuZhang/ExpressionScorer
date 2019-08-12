@@ -11,6 +11,12 @@ import java.util.List;
  *
  */
 public class ExpressionEvaluator {
+	/**
+	 * Given a filename, parse and evaluate the expression line by line and output the results to files.
+	 * @param filename		The input filename
+	 * @param useCacheValue  If applying the cache optimization to improve performance.
+	 * @return A list of filenames which represents the output file of the expressions.
+	 */
 	public static List<String> evalExpressionsFromFile(String filename, boolean useCachedValue)
 			throws FileNotFoundException, IOException {
 		List<String> lines = InputHandler.readFile(filename);

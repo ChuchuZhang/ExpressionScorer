@@ -63,7 +63,8 @@ public class InputHandler {
 	}
 
 	/**
-	 * Given a math expression, tokenize and validate the expression.
+	 * Given a math expression, tokenize and validate the expression. NOTE: The left
+	 * and right parenthesis for log operator would be replaced with [ and ].
 	 * 
 	 * @param formula
 	 *            Expression in string.
