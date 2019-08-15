@@ -192,7 +192,8 @@ public class InputHandler {
 				throw new IllegalArgumentException("Binary operator needs two operands");
 			}
 			char prevChar = prev.operator.charAt(0);
-			if (ExpressionCommon.BINARY_OPERATOR.contains(prevChar) || prevChar == ExpressionCommon.LEFT_PAREN
+			if (ExpressionCommon.UNARY_BINARY_OPERATOR.contains(prevChar)
+					|| ExpressionCommon.BINARY_OPERATOR.contains(prevChar) || prevChar == ExpressionCommon.LEFT_PAREN
 					|| prevChar == ExpressionCommon.LEFT_LOG_PAREN || prevChar == ExpressionCommon.DOT) {
 				throw new IllegalArgumentException("Binary operator needs two operands");
 			}

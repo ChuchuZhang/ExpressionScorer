@@ -15,9 +15,14 @@ class ExpressionScorerTest {
 	@Test
 	void testInvalid() {
 		exception.expect(Exception.class);
-		String formula = "-10*(";
+		String formula = "-10*(2";
 		assertThrows(IllegalArgumentException.class, () -> {
 			InputHandler.tokenize(formula);
+		});
+		
+		String formula0 = "-10+*2";
+		assertThrows(IllegalArgumentException.class, () -> {
+			InputHandler.tokenize(formula0);
 		});
 
 		String formula1 = "-10*()";
